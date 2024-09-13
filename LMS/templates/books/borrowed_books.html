@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="text-center my-4" style="font-weight: bold; text-transform: uppercase; color: #343a40;">My Borrowed Books</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Book Title</th>
+      <th scope="col">Borrow Date</th>
+      <th scope="col">Return Date</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for borrow in borrowed_books %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td>{{ borrow.book.title }}</td>
+      <td>{{ borrow.borrow_date }}</td>
+      <td>
+        {% if borrow.return_date %}
+          {{ borrow.return_date }}
+        {% else %}
+          N/A
+        {% endif %}
+      </td>
+      <td>
+        <form action="{% url 'return_book' borrow.id %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">Return Book</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">You have not borrowed any books yet.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

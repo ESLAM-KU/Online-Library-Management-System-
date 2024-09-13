@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="text-center my-4" style="font-weight: bold; text-transform: uppercase; color: #343a40;">Book List</h2>
+
+{% if user.is_mod or user.is_staff %}
+  <div class="mb-3 text-start">
+    <a href="{% url 'add_book' %}" class="btn btn-dark">Add Book</a>
+  </div>
+{% endif %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Title</th>
+      <th scope="col">Author</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for book in books %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td>{{ book.title }}</td>
+      <td>{{ book.author }}</td>
+      <td>
+        <!-- Button to open the details modal -->
+        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#bookModal{{ book.id }}">
+          Details
+        </button>
+      </td>
+    </tr>
+
+    <!-- Modal for book details -->
+    <div class="modal fade" id="bookModal{{ book.id }}" tabindex="-1" aria-labelledby="bookModalLabel{{ book.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="bookModalLabel{{ book.id }}">{{ book.title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>Description:</strong> {{ book.description }}</p>
+            <p><strong>Published in:</strong> {{ book.published_year }}</p>
+
+            {% if user.is_mod or user.is_staff %}
+              <a href="{% url 'update_book' book.id %}" class="btn btn-warning">Edit</a>
+              <a href="{% url 'delete_book' book.id %}" class="btn btn-danger">Delete</a>
+              {% if book.is_borrowed %}
+                <button class="btn btn-secondary" disabled>Already Borrowed</button>
+              {% else %}
+                <span class="text-success">Available</span>
+              {% endif %}
+            {% else %}
+              <!-- For student users -->
+              {% if book.is_borrowed %}
+                <button class="btn btn-warning" disabled>Already Borrowed</button>
+              {% else %}
+                <form action="{% url 'borrow_book' book.id %}" method="post" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-dark">Borrow</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
